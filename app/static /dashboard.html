@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QueueCare Appointments</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <main class="card wide">
+    <header class="row">
+      <div>
+        <h1>Appointments</h1>
+        <p class="sub" data-testid="current-user"></p>
+      </div>
+      <button class="secondary" data-testid="logout" onclick="logout()">Sign out</button>
+    </header>
+
+    <section data-testid="booking-form">
+      <h2>Book an appointment</h2>
+      <label for="doctor">Doctor</label>
+      <input id="doctor" data-testid="doctor" type="text" />
+
+      <label for="reason">Reason</label>
+      <input id="reason" data-testid="reason" type="text" />
+
+      <label for="date">Date</label>
+      <input id="date" data-testid="date" type="date" />
+
+      <button data-testid="book-submit" onclick="book()">Book appointment</button>
+    </section>
+
+    <p class="message" data-testid="message"></p>
+
+    <section>
+      <h2 data-testid="list-heading"></h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Queue</th><th>Patient</th><th>Date</th><th>Doctor</th><th>Reason</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="appointments" data-testid="appointment-list"></tbody>
+      </table>
+      <p class="empty" data-testid="empty-state" hidden>No appointments booked yet.</p>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+  <script>
+    const role = sessionStorage.getItem('role');
+    const name = sessionStorage.getItem('name');
+    const isPatient = role === 'patient';
+
+    if (!sessionStorage.getItem('token')) {
+      window.location.href = '/';
+    }
+
+    document.querySelector('[data-testid="current-user"]').textContent =
+      `${name} — signed in as ${role}`;
+
+    document.querySelector('[data-testid="list-heading"]').textContent =
+      isPatient ? 'Your appointments' : 'All appointments';
+
+    document.querySelector('[data-testid="booking-form"]').hidden = !isPatient;
+
+    async function book() {
+      const doctor = value('doctor');
+      const reason = value('reason');
+      const date = value('date');
+
+      if (!doctor || !reason || !date) {
+        return showMessage('Doctor, reason and date are all required.');
+      }
+
+      try {
+        await api('POST', '/appointments', { doctor, reason, date });
+        showMessage('Appointment booked.');
+        clear(['doctor', 'reason', 'date']);
+        await load();
+      } catch (err) {
+        showMessage(err.message);
+      }
+    }
+
+    async function cancel(id) {
+      try {
+        await api('DELETE', `/appointments/${id}`);
+        showMessage('Appointment cancelled.');
+        await load();
+      } catch (err) {
+        showMessage(err.message);
+      }
+    }
+
+    async function serve(id) {
+      try {
+        await api('POST', `/queue/${id}/serve`);
+        showMessage('Patient marked as served.');
+        await load();
+      } catch (err) {
+        showMessage(err.message);
+      }
+    }
+
+    async function reschedule(id) {
+      const newDate = prompt('New date (YYYY-MM-DD):');
+      if (!newDate) return;
+
+      try {
+        await api('PUT', `/appointments/${id}`, { date: newDate });
+        showMessage('Appointment rescheduled.');
+        await load();
+      } catch (err) {
+        showMessage(err.message);
+      }
+    }
+
+    async function load() {
+      const body = document.getElementById('appointments');
+      const empty = document.querySelector('[data-testid="empty-state"]');
+
+      try {
+        const items = await api('GET', '/appointments');
+        body.innerHTML = '';
+        empty.hidden = items.length > 0;
+
+        items.forEach(item => {
+          const row = document.createElement('tr');
+          row.dataset.testid = 'appointment-row';
+          row.dataset.id = item.id;
+
+          const serveButton = !isPatient && item.status === 'booked'
+            ? `<button class="link" data-testid="serve" onclick="serve(${item.id})">Mark served</button>`
+            : '';
+          const patientActions = isPatient && item.status === 'booked'
+            ? `<button class="link" data-testid="reschedule" onclick="reschedule(${item.id})">Reschedule</button>
+               <button class="link danger" data-testid="cancel" onclick="cancel(${item.id})">Cancel</button>`
+            : '';
+
+          row.innerHTML = `
+            <td data-testid="queue-number">${item.queue_number}</td>
+            <td data-testid="appointment-patient">${item.patient_email}</td>
+            <td data-testid="appointment-date">${item.date}</td>
+            <td data-testid="appointment-doctor">${item.doctor}</td>
+            <td data-testid="appointment-reason">${item.reason}</td>
+            <td data-testid="appointment-status">${item.status}</td>
+            <td>${patientActions}${serveButton}</td>
+          `;
+          body.appendChild(row);
+        });
+      } catch (err) {
+        showMessage(err.message);
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
