@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QueueCare Sign in</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <main class="card">
+    <h1>QueueCare</h1>
+    <p class="sub">Clinic appointment and queue system</p>
+
+    <section>
+      <h2>Sign in</h2>
+      <label for="login-email">Email</label>
+      <input id="login-email" data-testid="login-email" type="email" autocomplete="username" />
+
+      <label for="login-password">Password</label>
+      <input id="login-password" data-testid="login-password" type="password" autocomplete="current-password" />
+
+      <button data-testid="login-submit" onclick="login()">Sign in</button>
+    </section>
+
+    <hr />
+
+    <section>
+      <h2>Create an account</h2>
+      <label for="reg-name">Name</label>
+      <input id="reg-name" data-testid="register-name" type="text" />
+
+      <label for="reg-email">Email</label>
+      <input id="reg-email" data-testid="register-email" type="email" />
+
+      <label for="reg-password">Password</label>
+      <input id="reg-password" data-testid="register-password" type="password" />
+
+      <label for="reg-role">Role</label>
+      <select id="reg-role" data-testid="register-role">
+        <option value="patient">Patient</option>
+        <option value="staff">Staff</option>
+      </select>
+
+      <button class="secondary" data-testid="register-submit" onclick="register()">Create account</button>
+    </section>
+
+    <p class="message" data-testid="message"></p>
+  </main>
+
+  <script src="/static/app.js"></script>
+  <script>
+    async function login() {
+      const email = value('login-email');
+      const password = value('login-password');
+
+      if (!email || !password) {
+        return showMessage('Enter your email and password to sign in.');
+      }
+
+      try {
+        const data = await api('POST', '/auth/login', { email, password });
+        sessionStorage.setItem('token', data.access_token);
+        sessionStorage.setItem('role', data.role);
+        sessionStorage.setItem('name', data.name);
+        window.location.href = '/static/dashboard.html';
+      } catch (err) {
+        showMessage(err.message);
+      }
+    }
+
+    async function register() {
+      const name = value('reg-name');
+      const email = value('reg-email');
+      const password = value('reg-password');
+      const role = document.getElementById('reg-role').value;
+
+      if (!name || !email || !password) {
+        return showMessage('Name, email and password are all required.');
+      }
+
+      try {
+        await api('POST', '/auth/register', { name, email, password, role });
+        showMessage('Account created. You can sign in now.');
+      } catch (err) {
+        showMessage(err.message);
+      }
+    }
+  </script>
+</body>
+</html>
