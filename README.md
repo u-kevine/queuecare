@@ -26,7 +26,7 @@ No database is required. Data is held in memory and resets when the app restarts
 ## Install
 
 ```bash
-git clone <https://github.com/s-gasaro/queuecare.git>
+git clone <https://github.com/u-kevine/queuecare.git>
 cd queuecare
 
 python -m venv venv
