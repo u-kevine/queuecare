@@ -1,0 +1,80 @@
+:root {
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --border: #dde3ec;
+  --text: #1e2430;
+  --muted: #6b7484;
+  --accent: #1f6f8b;
+  --danger: #b3392f;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 40px 16px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.card.wide { max-width: 860px; }
+
+h1 { margin: 0; font-size: 22px; }
+h2 { margin: 20px 0 12px; font-size: 15px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+.row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+
+label { display: block; font-size: 13px; margin-bottom: 4px; color: var(--muted); }
+
+input, select {
+  width: 100%;
+  padding: 9px 11px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+}
+
+input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+button {
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--border); }
+button.link { background: none; color: var(--accent); padding: 2px 6px; font-weight: 500; }
+button.link.danger { color: var(--danger); }
+button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+.message { min-height: 20px; font-size: 14px; color: var(--danger); margin: 8px 0 0; }
+.empty { color: var(--muted); font-size: 14px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-size: 12px; text-transform: uppercase; color: var(--muted); padding: 8px; border-bottom: 1px solid var(--border); }
+td { padding: 8px; border-bottom: 1px solid var(--border); }
